@@ -193,21 +193,6 @@ brewalgo/
 - ✅ Easy to maintain and scale
 - ✅ Clear separation of concerns
 
----
-
-## 🎨 Screenshots
-
-### Home Page
-![Home Page](https://via.placeholder.com/800x500/667eea/ffffff?text=Home+Page)
-
-### Problem List
-![Problem List](https://via.placeholder.com/800x500/764ba2/ffffff?text=Problem+List)
-
-### Code Editor
-![Code Editor](https://via.placeholder.com/800x500/f093fb/ffffff?text=Code+Editor)
-
-### Leaderboard
-![Leaderboard](https://via.placeholder.com/800x500/4facfe/ffffff?text=Leaderboard)
 
 ---
 
