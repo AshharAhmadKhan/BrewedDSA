@@ -10,9 +10,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AuthResponseDTO {
-    
     private String token;
+    
+    @Builder.Default
     private String tokenType = "Bearer";
+    
     private UserDTO user;
     private String message;
 }

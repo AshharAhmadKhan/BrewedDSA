@@ -15,7 +15,6 @@ import java.util.Map;
 @RequestMapping("/api/submissions")
 @RequiredArgsConstructor
 @Slf4j
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:5173"})
 public class SubmissionController {
     
     private final SubmissionService submissionService;

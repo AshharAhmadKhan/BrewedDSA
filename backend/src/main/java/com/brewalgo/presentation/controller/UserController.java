@@ -18,7 +18,6 @@ import java.util.Map;
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
 @Slf4j
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:5173"})
 public class UserController {
     
     private final UserService userService;
@@ -103,5 +102,12 @@ public class UserController {
         log.info("PATCH /api/users/{}/rating", id);
         userService.updateUserRating(id, ratingUpdate.get("rating"));
         return ResponseEntity.ok().build();
+    }
+    // TEMPORARY - Remove after fixing passwords
+    @PostMapping("/generate-hash")
+    public ResponseEntity<Map<String, String>> generateHash(@RequestBody Map<String, String> request) {
+        String password = request.get("password");
+        String hash = new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder().encode(password);
+        return ResponseEntity.ok(Map.of("password", password, "hash", hash));
     }
 }

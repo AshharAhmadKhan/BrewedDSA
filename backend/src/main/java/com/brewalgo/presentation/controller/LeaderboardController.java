@@ -16,7 +16,6 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/leaderboard")
 @RequiredArgsConstructor
 @Slf4j
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:5173"})
 public class LeaderboardController {
     
     private final UserService userService;

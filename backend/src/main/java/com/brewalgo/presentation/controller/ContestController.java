@@ -16,7 +16,6 @@ import java.util.Map;
 @RequestMapping("/api/contests")
 @RequiredArgsConstructor
 @Slf4j
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:5173"})
 public class ContestController {
     
     private final ContestService contestService;
