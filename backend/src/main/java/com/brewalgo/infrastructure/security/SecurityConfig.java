@@ -39,16 +39,17 @@ public class SecurityConfig {
                     return corsConfig;
                 }))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/users/register").permitAll()
-                        .requestMatchers("/api/users/login").permitAll()
-                        .requestMatchers("/api/users/exists/**").permitAll()
-                        .requestMatchers("/api/users/top").permitAll()
-                        .requestMatchers("/api/problems/**").permitAll()
-                        .requestMatchers("/api/leaderboard/**").permitAll()
-                        .requestMatchers("/ws/**").permitAll()
-                        .anyRequest().authenticated()
-                )
+        .requestMatchers("/api/auth/**").permitAll()
+        .requestMatchers("/api/users/register").permitAll()
+        .requestMatchers("/api/users/login").permitAll()
+        .requestMatchers("/api/users/exists/**").permitAll()
+        .requestMatchers("/api/users/top").permitAll()
+        .requestMatchers("/api/problems/**").permitAll()
+        .requestMatchers("/api/submissions/**").permitAll()  // ADD THIS LINE
+        .requestMatchers("/api/leaderboard/**").permitAll()
+        .requestMatchers("/ws/**").permitAll()
+        .anyRequest().authenticated()
+)
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )

@@ -1,7 +1,6 @@
 package com.brewalgo.application.service;
 
 import com.brewalgo.application.dto.SubmissionDTO;
-import com.brewalgo.domain.entity.Submission;
 import java.util.List;
 
 public interface SubmissionService {
@@ -24,8 +23,8 @@ public interface SubmissionService {
     
     SubmissionDTO evaluateSubmission(Long submissionId);
     
-    void updateSubmissionStatus(Long submissionId, Submission.Status status, 
-                                Integer executionTime, Integer memoryUsed, String errorMessage);
+    // ADD THIS NEW METHOD
+    void updateSubmissionStatus(Long submissionId, String status, Integer executionTime, Integer memoryUsed, String errorMessage);
     
     int calculateScore(Long problemId, Integer executionTime);
     
