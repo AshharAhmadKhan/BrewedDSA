@@ -1,209 +1,207 @@
-BrewAlgo
-BrewAlgo is a competitive programming platform built to explore backend system design, Docker-based isolation, and the challenges of safely executing untrusted code.
+# BrewAlgo
 
-The project focuses on correctness, isolation, and architectural clarity rather than scale, and serves as a hands-on study of how real-world online judges are designed.
+> Coding judge platform I built to understand how LeetCode and Codeforces prevent malicious code from breaking their servers
 
-The system follows Clean Architecture, supports multiple languages, and evaluates submissions against test cases in real time.
+[![Java](https://img.shields.io/badge/Java-17-orange.svg)](https://www.oracle.com/java/)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2.1-brightgreen.svg)](https://spring.io/projects/spring-boot)
+[![React](https://img.shields.io/badge/React-18-blue.svg)](https://reactjs.org/)
+[![Docker](https://img.shields.io/badge/Docker-Enabled-2496ED.svg)](https://www.docker.com/)
 
-Core Capabilities
-Code Execution
-Docker-isolated execution with enforced CPU and memory limits
+This started as a "how hard can it be to build a coding judge?" project and turned into a deep dive into Docker isolation, resource limits, and secure code execution. It's basically my playground for learning system design.
 
-Multi-language support (Java, Python) via an extensible executor design
+## What it does
 
-Real-time compilation and runtime feedback
+- Runs user code in isolated Docker containers (because running untrusted code directly would be... bad)
+- Supports Java and Python (adding more languages is just adding Dockerfiles)
+- Tests submissions against multiple test cases
+- Returns detailed feedback: ACCEPTED, WRONG_ANSWER, COMPILATION_ERROR, TIME_LIMIT_EXCEEDED, etc.
+- Has a leaderboard because competitive programming without rankings isn't fun
 
-Multiple test cases per submission, including hidden tests
+## Why I built this
 
-Verdict classification:
+Honestly, I was curious how platforms like LeetCode prevent someone from submitting `while(true) {fork();}` and crashing their servers. Turns out Docker resource limits and cgroups are pretty neat.
 
-ACCEPTED
+Also wanted to:
+- Learn Clean Architecture (the 4-layer thing everyone talks about)
+- Actually use Docker for something beyond `docker run hello-world`
+- Understand how code execution services work
+- Build something I could show to companies without saying "it's just a CRUD app"
 
-WRONG_ANSWER
+## Tech Stack
 
-COMPILATION_ERROR
+**Backend:**
+- Spring Boot 3.2 (with Spring Security for JWT auth)
+- PostgreSQL (because relationships matter)
+- Docker Java SDK (for container management)
 
-RUNTIME_ERROR
+**Frontend:**
+- React + Vite (CRA felt slow)
+- Tailwind CSS (I'm not a designer)
 
-TIME_LIMIT_EXCEEDED
+**Execution:**
+- Docker containers with CPU/memory limits
+- Custom images for each language (openjdk:17-slim, python:3.11-slim)
 
-Platform Features
-JWT-based authentication and session handling
+## Architecture
+```
+React Frontend → Spring Boot API → Docker Engine → Execute Code → Return Results
+                      ↓
+                 PostgreSQL
+            (problems, users, submissions)
+```
 
-Global leaderboard and user rating system
+The interesting part is the code execution:
+1. User submits code
+2. Backend writes code to temp file
+3. Spins up Docker container with resource limits (256MB RAM, 50% CPU, 5s timeout)
+4. Runs code against test cases
+5. Captures output via Docker logs
+6. Compares with expected output
+7. Returns verdict
 
-Personal submission history and statistics
+## Quick Start
 
-Contest system framework (extensible, not fully implemented)
+**Prerequisites:**
+- Java 17+
+- Node.js 18+
+- PostgreSQL
+- Docker Desktop
+- Maven
 
-Architecture & Design
-BrewAlgo follows Clean Architecture principles to keep business logic independent of frameworks and external systems.
-
-Layered Structure
-Presentation — REST controllers, request/response DTOs
-
-Application — use cases, orchestration, business rules
-
-Domain — entities, value objects, core logic (no framework dependencies)
-
-Infrastructure — persistence, security, Docker execution, external integrations
-
-The domain layer contains zero Spring dependencies, ensuring framework independence and testability.
-
-Security & Isolation Model
-All user code executes inside short-lived Docker containers
-
-Containers are configured with:
-
-CPU and memory limits
-
-No external network access
-
-Dropped Linux capabilities
-
-Containers are destroyed after execution to prevent state leakage
-
-This setup mitigates common abuse vectors but is not intended to be a production-grade sandbox. The project prioritizes learning and correctness over hardened isolation.
-
-System Overview
-Plaintext
-┌─────────────────────────────────────────────────────────────────┐
-│                         FRONTEND (React)                        │
-│  - Problem Browser      - Code Editor      - Leaderboard        │
-└────────────────────────────┬────────────────────────────────────┘
-                             │ REST API (JWT)
-┌────────────────────────────▼────────────────────────────────────┐
-│                    BACKEND (Spring Boot 3.2)                    │
-│  ┌──────────────────────────────────────────────────────────┐   │
-│  │  Presentation Layer  - Controllers, DTOs                 │   │
-│  ├──────────────────────────────────────────────────────────┤   │
-│  │  Application Layer   - Use Cases, Services               │   │
-│  ├──────────────────────────────────────────────────────────┤   │
-│  │  Domain Layer        - Entities, Value Objects           │   │
-│  ├──────────────────────────────────────────────────────────┤   │
-│  │  Infrastructure      - JPA, Security, Docker SDK         │   │
-│  └──────────────────────────────────────────────────────────┘   │
-└────────────┬─────────────────────────────┬──────────────────────┘
-             │                             │
-             │ JDBC                        │ Docker Java SDK
-             ▼                             ▼
-┌─────────────────────┐      ┌──────────────────────────────────┐
-│     PostgreSQL DB   │      │       Docker Engine              │
-│  - Users            │      │  ┌────────────────────────────┐  │
-│  - Problems         │      │  │ Isolated Container         │  │
-│  - Submissions      │      │  │ - JDK 17 / Python 3.11     │  │
-│  - Test Cases       │      │  │ - Resource Limits          │  │
-└─────────────────────┘      │  │ - Execution Timeout        │  │
-                             │  └────────────────────────────┘  │
-                             └──────────────────────────────────┘
-Execution Flow
-Submission is persisted to the database.
-
-Language-specific executor is selected based on the submission metadata.
-
-Docker container is created with enforced resource limits (CPU/Memory).
-
-Code is compiled inside the isolated container (for compiled languages).
-
-Test cases are executed sequentially against the binary or script.
-
-Stdout and stderr are captured asynchronously via a custom result callback.
-
-Verdict is computed by comparing captured output with expected results.
-
-Container is destroyed immediately to prevent side effects or state leakage.
-
-Each submission currently uses a fresh container to prioritize isolation correctness over throughput.
-
-Tech Stack
-Backend
-Java 17
-
-Spring Boot 3.2.1
-
-Spring Security, Spring Data JPA
-
-PostgreSQL
-
-Docker Java SDK 3.4.0
-
-JWT (jjwt)
-
-Frontend
-React 18
-
-Vite
-
-Tailwind CSS
-
-Tooling
-Docker
-
-Maven
-
-Git
-
-Getting Started
-Prerequisites
-Java 17+
-
-Node.js 18+
-
-PostgreSQL
-
-Docker
-
-Maven
-
-Run Locally
-Bash
+**Setup:**
+```bash
+# Clone
 git clone https://github.com/AshharAhmadKhan/BrewAlgo.git
-cd BrewAlgo/backend
-mvn spring-boot:run
-Key Engineering Challenges
-Docker Dependency Resolution
-Problem: Encountered NoClassDefFoundError: HttpVersionPolicy during container initialization.
+cd BrewAlgo
 
-Cause: Version mismatch between Spring Boot–managed httpcore5 and docker-java.
+# Database
+psql -U postgres
+CREATE DATABASE brewalgo;
+\q
 
-Resolution: Upgraded Docker Java SDK to 3.4.0 and explicitly enforced httpcore5:5.3.1 via Maven dependency management.
+# Backend
+cd backend
+mvn spring-boot:run  # Runs on :8081
 
-Output Capture
-Implemented a custom ResultCallback.Adapter<Frame> to reliably capture and aggregate container stdout and stderr, preventing data loss during asynchronous execution between the daemon and the application.
+# Docker images (separate terminals)
+cd docker/java-executor
+docker build -t brewalgo-java-executor:latest .
 
-Limitations & Future Work
-Docker cold-start latency impacts submission response time.
+cd ../python-executor
+docker build -t brewalgo-python-executor:latest .
 
-No horizontal scaling or worker pool yet (sequential processing).
+# Frontend
+cd ../../frontend
+npm install
+npm run dev  # Runs on :5173
+```
 
-Output comparison is strict (no custom checkers/special judges).
+Don't forget to update `backend/src/main/resources/application.properties` with your database credentials.
 
-Planned Improvements:
+## Project Structure
+```
+BrewAlgo/
+├── backend/                 # Spring Boot
+│   ├── domain/             # Entities, repositories
+│   ├── application/        # Services (execution logic here)
+│   ├── infrastructure/     # Security, persistence
+│   └── presentation/       # Controllers
+│
+├── frontend/               # React
+│   ├── components/
+│   ├── pages/
+│   └── services/          # API calls
+│
+└── docker/                # Execution environments
+    ├── java-executor/
+    └── python-executor/
+```
 
-Executor pooling for higher throughput.
+## Challenges I faced
 
-Custom judge support for problems with multiple valid solutions.
+**1. Docker dependency hell**
+Spring Boot 3.2.1 uses `httpcore5:5.2.4`, but `docker-java:3.3.4` needs `5.3+`. Took me hours to figure out I needed to explicitly force the version in Maven.
 
-Async submission processing with WebSockets for real-time updates.
+**2. Capturing Docker output**
+Docker's log API returns a callback, not a string. Had to implement a custom `ResultCallback.Adapter<Frame>` to accumulate stdout. The docs weren't great here.
 
-Further sandbox hardening (seccomp profiles).
+**3. Preventing shell injection**
+Initially used `echo "input" | java Solution`, which is vulnerable. Switched to writing input to a file and redirecting it.
 
-What I Learned
-Designing and documenting REST APIs before implementation.
+**4. Execution timing**
+Docker overhead adds ~3-4s to execution time. Haven't optimized this yet — probably need container pooling.
 
-Managing Docker container lifecycles safely from a Java environment.
+## What's working
 
-Balancing execution correctness with performance trade-offs.
+- ✅ User authentication (JWT)
+- ✅ Problem CRUD
+- ✅ Code submission & evaluation
+- ✅ Multi-language support
+- ✅ Resource limits (prevents infinite loops)
+- ✅ Test case validation
+- ✅ Leaderboard
 
-Applying Clean Architecture in a real-world backend system.
+## What's not (yet)
 
-Debugging complex dependency conflicts in production-like setups.
+- Input format documentation for users
+- More than 1 practice problem (need to add more)
+- Contest system (backend is ready, UI isn't)
+- Container pooling (creates new container per test case)
+- WebSocket for real-time updates
 
-Author
-Ashhar Ahmad Khan BTech Computer Science Student (3rd Year) | Backend-Focused Developer
+## API Endpoints
+```
+POST /api/auth/register
+POST /api/auth/login
+GET  /api/problems
+GET  /api/problems/slug/{slug}
+POST /api/submissions
+GET  /api/submissions/user/{userId}
+GET  /api/leaderboard
+```
 
-Email: itzashhar@gmail.com
+See `docs/API.md` for full documentation.
 
-GitHub: https://github.com/AshharAhmadKhan
+## Security
 
-LinkedIn: https://www.linkedin.com/in/ashhar-ahmad-khan
+- JWT authentication with BCrypt password hashing
+- Docker isolation (no code runs on host)
+- Resource limits (CPU, memory, timeout)
+- Parameterized SQL queries (bye bye SQL injection)
+
+## Stats
+
+- ~10,000 lines of code
+- 40+ Java files
+- 25+ React components
+- 15+ API endpoints
+- 6 database entities
+
+## Contributing
+
+Feel free to fork and submit PRs. This is a learning project, so I'm open to feedback and suggestions.
+
+## What I learned
+
+- How Docker SDK actually works in Java
+- Why async callback patterns exist (looking at you, Docker logs)
+- Clean Architecture isn't just buzzwords — it actually helps organize code
+- Resource limits are non-negotiable for code execution
+- PostgreSQL's JSONB type is surprisingly useful for storing test cases
+
+## License
+
+MIT — do whatever you want with this.
+
+## Contact
+
+Ashhar Ahmad Khan  
+📧 itzashhar@gmail.com  
+💼 [LinkedIn](https://linkedin.com/in/ashhar-ahmad-khan)  
+🐙 [GitHub](https://github.com/AshharAhmadKhan)
+
+---
+
+Built this to learn, sharing it to help others learn too.
+
+If this helped you understand code execution systems better, give it a ⭐️
