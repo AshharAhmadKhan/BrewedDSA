@@ -2,10 +2,6 @@
 
 > Coding judge platform I built to understand how LeetCode and Codeforces prevent malicious code from breaking their servers
 
-[![Java](https://img.shields.io/badge/Java-17-orange.svg)](https://www.oracle.com/java/)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2.1-brightgreen.svg)](https://spring.io/projects/spring-boot)
-[![React](https://img.shields.io/badge/React-18-blue.svg)](https://reactjs.org/)
-[![Docker](https://img.shields.io/badge/Docker-Enabled-2496ED.svg)](https://www.docker.com/)
 
 This started as a "how hard can it be to build a coding judge?" project and turned into a deep dive into Docker isolation, resource limits, and secure code execution. It's basically my playground for learning system design.
 
